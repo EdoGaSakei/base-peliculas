@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <title>Películas</title>
+    <script>
+      /* invoca a registraServiceWorker instalar la aplicación en el caché del
+       * navegador. No se espera a que termine el registro. */
+      registraServiceWorker();
+      /** Registra un service worker para instalar la aplicación en el
+       * caché del navegador. La palabra reservada async indica que no espera
+       * a que termine y libera el registro de activación que lo llamó. */
+      async function registraServiceWorker() {
+        if ("serviceWorker" in navigator) {
+          try {
+            /* Registra el service worker y espera que termine. El service
+             * worker debe estar en la carpeta public. La palabra await indica
+             * que espera a que termine y solo puede usarse en una función
+             * async. */
+            const registro = await navigator.serviceWorker.register("sw.js");
+            // Registro correcto y se muestra en la consola.
+            console.log("Service Worker registrado.");
+            console.log(registro);
+          } catch (e) {
+            // Hubo un error en el registro.
+            muestraError(e);
+          }
+        }
+      }
+      /** Procesa una excepción y muestra un mensaje de error.
+       * @param {Error} e descripción del error. */
+      function muestraError(e) {
+        console.log(e);
+        alert(e.message);
+      }
+    </script>
+    <!-- Ícono para la página web. Debe ponerse en la raíz de la página. -->
+    <link rel="icon" sizes="32x32" href="favicon.ico">
+
+    <!-- Color de la barra de navegación de Chrome en dispositivos móviles. -->
+    <meta name="theme-color" content="#ffcb2d">
+
+    <!-- Configuración de la PWA: Chrome y Edge. -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Configuración para Web Clip en Safari. -->
+    <meta name="apple-mobile-web-app-title" content="dmppwa">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="img/icono-2048.png">
+    <link rel="apple-touch-icon" sizes="256x256" href="img/icono-256.png">
+    <link rel="apple-touch-icon" sizes="1024x1024" href="img/icono-1024.png">
+    <link rel="apple-touch-icon" sizes="2048x2048" href="img/icono-2048.png">
+
+    <script type="module" src="cmp/mi-footer.js"></script>
+    <link rel="stylesheet" href="css/estilos.css">
+
+    <!-- Carga el núcleo de Firebase. Actualiza los números de versión cuando
+    sea necesario. Hemos quitado el atributo defer que aparecía originalmente.
+    -->
+    <script src="/__/firebase/7.15.5/firebase-app.js"></script>
+    <!-- Solo incluye las características de Firebase que necesites.s -->
+    <script src="/__/firebase/7.15.5/firebase-auth.js"></script>
+    <script src="/__/firebase/7.15.5/firebase-firestore.js"></script>
+    <script src="/__/firebase/7.15.5/firebase-storage.js"></script>
+    <!-- Carga la configuración de tu proyecto en el servidor de Firebase. -->
+    <script src="/__/firebase/init.js"></script>
+  </head>
+  <body>
+    <form>
+      <header>
+        <h1>Películas</h1></br>
+        <div class="ext">
+          <button type="button" onclick="extension.classList.toggle('muestra');">
+            <span class="material-icons">more_vert</span>
+          </button>
+          <ul id="extension">
+            <li>
+              <button type="button"
+              id="agregar" type="button" onclick="alta();">Agregar</button>
+            </li>
+            <li>
+              <button type="button"
+              type="submit" onclick="guarda()";>Guardar</button>
+            </li>
+            <li>
+              <button type="button"
+              id="eliminar" type="button" onclick="elimina();">Eliminar</button>
+            </li>
+          </ul>
+        </div>
+      </header>
+      <p><input id="titulo" type="text" placeholder="Título" required></p>
+      <p><input id="genero" type="text" placeholder="Género" required></p>
+      <ul id="lista">
+        <li><progress max="100">Cargando…</progress></li>
+      </ul>
+      <mi-footer></mi-footer>
+    </form>
+    <script>
+      /** Id del objeto seleccionado en la lista. */
+      let id = "";
+      const firestore = firebase.firestore();
+      muestraLista();
+      alta();
+      function muestraLista() {
+        firestore.collection("PELICULAS").orderBy("PEL_TITULO").onSnapshot(
+          documentos => {
+            let inner = "";
+            documentos.forEach(doc =>
+              inner += /* html */
+              `<li>
+                <button type=button onclick="muestra('${cod(doc.id)}')">
+                  <strong>Título:</strong>
+                  ${cod(doc.data().PEL_TITULO)}
+                  <br>
+                  <strong>Género:</strong>
+                  ${cod(doc.data().PEL_GENERO)} 
+                </button>
+              </li>`);
+            lista.innerHTML = inner;
+          },
+          e => {
+            procesaError(e);
+            muestraLista();
+          }
+        );
+      }
+      /** Prepara la forma para capturar un pasatiempo nuevo. */
+      function alta() {
+        agregar.disabled = true; // Deshabilita el botón "agregar".
+        eliminar.disabled = true; // Deshabilita el botón "eliminar".
+        id = ""; // Pone en blanco el id, porque todavía no agregamos a la BD.
+        titulo.value = ""; // Pone en blanco los datos porque todavía no hay.
+        genero.value = "";
+      }
+      /** Prepara la forma para modificar el documento que corresponde al
+       * id seleccionado en el listado.
+       * @param {string} idSel id del documento seleccionado en el listado. */
+      async function muestra(idSel) {
+        try {
+          agregar.disabled = false; // Habilita el botón "agregar".
+          eliminar.disabled = false; // Habilita el botón "eliminar".
+          /* Recupera el documento con el id seleccionado en la colección
+           * "PASATIEMPO". */
+          let doc = await firestore.collection("PELICULAS").doc(idSel).get();
+          if (doc.exists) {
+            id = doc.id;
+            let data = doc.data();
+            titulo.value = data.PEL_TITULO || "";
+            genero.value = data.PEL_GENERO || "";
+          } else {
+            alert("La película seleccionada no está registrada.");
+            alta();
+          }
+        } catch (e) {
+          procesaError(e);
+        }
+      }
+      async function guarda() {
+        try {
+          const modelo = {
+            PEL_TITULO: titulo.value.trim(),
+            PEL_GENERO: genero.value.trim()
+          };
+          if (id) {
+            /* Modifica el modelo en la base de datos en base al id y espera a
+             * que termine. */
+            await firestore.collection("PELICULAS").doc(id).set(modelo);
+          } else {
+            /* Agrega el modelo a la base de datos, genera automáticamente el
+             * id y espera a que termine. */
+            await firestore.collection("PELICULAS").add(modelo);
+          }
+          alta();
+        } catch (e) {
+          procesaError(e);
+        }
+      }
+      async function elimina() {
+        try {
+          /* Elimina el documento en la base de datos usando el id y espera a
+           * que termine. */
+          await firestore.collection("PELICULAS").doc(id).delete();
+          alta();
+        } catch (e) {
+          procesaError(e);
+        }
+      }
+      function procesaError(e) {
+        console.log(e);
+        alert(e.message);
+      }
+      /** Codifica la información textual para que no inyecte código HTML.
+       * @param {any} valor información a codificar.
+       * @returns {string} el texto transformado. */
+      function cod(valor) {
+        return (valor || "").toString()
+          .replace(/[<>"']/g,
+            /** @param {string} letra */
+            letra => {
+              switch (letra) {
+                case "<": return "&lt;";
+                case ">": return "&gt;";
+                case '"': return "&quot;";
+                case "'": return "&#039;";
+                default: return letra;
+              }
+            });
+      }
+    </script>
+  </body>
+</html>
