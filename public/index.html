@@ -69,7 +69,7 @@
     <script src="/__/firebase/init.js"></script>
   </head>
   <body>
-    <form>
+    <form action="javascript:guarda()">
       <header>
         <h1>Películas</h1></br>
         <div class="ext">
@@ -79,21 +79,21 @@
           <ul id="extension">
             <li>
               <button type="button"
-              id="agregar" type="button" onclick="alta();">Agregar</button>
+              id="agregar" type="button" onclick="alta(),extension.classList.toggle('muestra');">Agregar...</button>
+            </li>
+            <li>
+              <button
+              type="submit" onclick="extension.classList.toggle('muestra');">Guardar</button>
             </li>
             <li>
               <button type="button"
-              type="submit" onclick="guarda()";>Guardar</button>
-            </li>
-            <li>
-              <button type="button"
-              id="eliminar" type="button" onclick="elimina();">Eliminar</button>
+              id="eliminar" type="button" onclick="elimina(),extension.classList.toggle('muestra');">Eliminar</button>
             </li>
           </ul>
         </div>
       </header>
-      <p><input id="titulo" type="text" placeholder="Título" required> </p>
-      <p><input id="genero" type="text" placeholder="Género" required> </p>
+      <p><input id="titulo" type="text" placeholder="Título" required></p>
+      <p><input id="genero" type="text" placeholder="Género" required></p>
       <ul id="lista">
         <li><progress max="100">Cargando…</progress></li>
       </ul>
