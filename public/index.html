@@ -92,10 +92,14 @@
           </ul>
         </div>
       </header>
-      <p><input id="titulo" type="text" placeholder="Título" required></p>
-      <p><input id="genero" type="text" placeholder="Género" required></p>
+      <p class="campo flotante"><input id="titulo" required>
+        <label for=titulo>Título</label>
+      </p>
+      <p class="campo flotante"><input id="genero" required>
+        <label for=genero>Género</label>
+      </p>
       <ul id="lista">
-        <li><progress max="100">Cargando…</progress></li>
+        <ol><progress max="100">Cargando…</progress></ol>
       </ul>
       <mi-footer></mi-footer>
     </form>
@@ -111,7 +115,7 @@
             let inner = "";
             documentos.forEach(doc =>
               inner += /* html */
-              `<li>
+              `<ol>
                 <button type=button onclick="muestra('${cod(doc.id)}')">
                   <strong>Título:</strong>
                   ${cod(doc.data().PEL_TITULO)}
@@ -119,7 +123,7 @@
                   <strong>Género:</strong>
                   ${cod(doc.data().PEL_GENERO)} 
                 </button>
-              </li>`);
+              </ol>`);
             lista.innerHTML = inner;
           },
           e => {

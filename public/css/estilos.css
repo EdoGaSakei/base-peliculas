@@ -4,6 +4,8 @@
     --color-hover: #4646462c;
     --color-secundario: darkblue;
     --color-componente: black;
+    --color-ext: white;
+    --color-sombra: #b6b6b6;
     --altura-etiqueta: 0.7rem;
     font-family: sans-serif
   }
@@ -30,11 +32,6 @@
     margin-right: auto;
   }
 
-  button {
-    border: none;
-    padding: 0.5rem;
-    background-color: transparent;
-  }
 
   button:hover {
     background-color: var(--color-hover)
@@ -69,6 +66,7 @@
   p.campo {
     position: relative;
     padding-top: var(--altura-etiqueta);
+    z-index: -2;
   }
 
   p.campo label, output {
@@ -91,25 +89,7 @@
     top: 0;
     font-size: var(--altura-etiqueta);
   }
-  ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 1rem 0;
-  }
 
-  li {
-    margin: 0.5rem 0;
-    padding: 0.5rem;
-  }
-
-  li:active {
-    background-color: var(--color-hover);
-  }
-
-  li .campo.principal {
-    font-size: large;
-    font-weight: bold;
-  }
   button {
     border: none;
     padding: 0.5rem;
@@ -130,12 +110,15 @@
     padding: 0;
     top: 2.5rem;
     right: 1rem;
+    z-index: 1;
     background-color: var(--color-ext);
     box-shadow: -1px 5px 7px 0px var(--color-sombra);
   }
 
   header .ext ul.muestra {
     display: block;
+    position: fixed;
+    z-index: 1;
   }
 
   header li:hover {
@@ -145,4 +128,5 @@
   header li button {
     display: block;
     width: 100%;
+    z-index: 1;
   }
